@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useState } from 'react';
 import { getAlerts } from '../api/endpoints';
+import { isApiEnabled } from '../api/config';
 import { pickList, pickTimestamp } from '../utils/data';
 
 function sortAlerts(alerts) {
@@ -17,8 +18,16 @@ export function useAlerts(pollMs = 10000) {
   const [loading, setLoading] = useState(true);
 
   const fetchAlerts = useCallback(async () => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = await getAlerts();
+      if (payload == null) {
+        return;
+      }
       const nextAlerts = sortAlerts(pickList(payload, ['alerts', 'items', 'data']));
 
       startTransition(() => {
@@ -33,6 +42,11 @@ export function useAlerts(pollMs = 10000) {
   }, []);
 
   useEffect(() => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return undefined;
+    }
+
     const timeoutId = window.setTimeout(() => {
       void fetchAlerts();
     }, 0);

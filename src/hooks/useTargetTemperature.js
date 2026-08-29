@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import { getTargetTemperature, setTargetTemperature } from '../api/endpoints';
+import { isApiEnabled } from '../api/config';
 import { toNumber, pickObject } from '../utils/data';
 
 function extractTargetC(payload) {
@@ -31,8 +32,16 @@ export function useTargetTemperature() {
   const targetRef = useRef(null);
 
   const refreshTarget = useCallback(async () => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = await getTargetTemperature();
+      if (payload == null) {
+        return;
+      }
       const nextTarget = extractTargetC(payload);
 
       startTransition(() => {
@@ -59,6 +68,10 @@ export function useTargetTemperature() {
 
     try {
       const payload = await setTargetTemperature(nextTarget);
+      if (payload == null && !isApiEnabled) {
+        return;
+      }
+
       const confirmedTarget = extractTargetC(payload);
 
       startTransition(() => {
@@ -79,6 +92,11 @@ export function useTargetTemperature() {
   }, []);
 
   useEffect(() => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return undefined;
+    }
+
     const timeoutId = window.setTimeout(() => {
       void refreshTarget();
     }, 0);

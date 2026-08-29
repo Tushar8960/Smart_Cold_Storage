@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useState } from 'react';
 import { getReadingHistory } from '../api/endpoints';
+import { isApiEnabled } from '../api/config';
 import { pickList, pickNumber, pickTimestamp } from '../utils/data';
 
 function normalizeHistory(payload) {
@@ -32,8 +33,16 @@ export function useReadingHistory(params = {}, pollMs = 30000) {
   const paramsKey = JSON.stringify(params);
 
   const fetchHistory = useCallback(async () => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = await getReadingHistory(params);
+      if (payload == null) {
+        return;
+      }
       const nextHistory = normalizeHistory(payload);
 
       startTransition(() => {
@@ -48,6 +57,11 @@ export function useReadingHistory(params = {}, pollMs = 30000) {
   }, [paramsKey]);
 
   useEffect(() => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return undefined;
+    }
+
     const timeoutId = window.setTimeout(() => {
       void fetchHistory();
     }, 0);

@@ -20,6 +20,7 @@ import { useTargetTemperature } from '../hooks/useTargetTemperature';
 import { useCoolingMode } from '../hooks/useCoolingMode';
 import { useProduceInfo } from '../hooks/useProduceInfo';
 import { deriveLiveAlerts, mergeAlerts } from '../utils/alerts';
+import { isApiEnabled } from '../api/config';
 
 function HeroStat({ icon: Icon, label, value, tone }) {
   return (
@@ -77,13 +78,15 @@ export default function DashboardPage() {
 
   const liveAlerts = useMemo(
     () =>
-      deriveLiveAlerts({
-        reading,
-        isOnline,
-        targetC: resolvedTarget,
-        previousPowerSource,
-        wasOnline,
-      }),
+      isApiEnabled
+        ? deriveLiveAlerts({
+            reading,
+            isOnline,
+            targetC: resolvedTarget,
+            previousPowerSource,
+            wasOnline,
+          })
+        : [],
     [reading, isOnline, resolvedTarget, previousPowerSource, wasOnline],
   );
 
@@ -109,7 +112,12 @@ export default function DashboardPage() {
       <div className="pointer-events-none absolute left-[-5rem] top-56 h-44 w-44 rounded-full bg-leaf-100/70 blur-3xl float-slow" />
       <div className="pointer-events-none absolute right-[-4rem] top-72 h-56 w-56 rounded-full bg-sky-100/65 blur-3xl float-slow" style={{ animationDelay: '1.5s' }} />
 
-      <Navbar isOnline={isOnline} activeAlerts={activeAlertCount} lastUpdated={lastUpdated} />
+      <Navbar
+        isOnline={isOnline}
+        apiEnabled={isApiEnabled}
+        activeAlerts={activeAlertCount}
+        lastUpdated={lastUpdated}
+      />
 
       <main className="relative mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
         <section className="fade-rise rounded-[2rem] bg-leaf-900 px-5 py-6 text-cream shadow-[0_30px_70px_-42px_rgba(36,50,31,0.96)] sm:px-8 sm:py-7">
@@ -132,8 +140,8 @@ export default function DashboardPage() {
               <HeroStat
                 icon={Activity}
                 label="ESP32"
-                value={isOnline ? 'Online' : 'Offline'}
-                tone={isOnline ? 'text-leaf-100' : 'text-clay-100'}
+                value={isApiEnabled ? (isOnline ? 'Online' : 'Offline') : 'Standby'}
+                tone={isApiEnabled ? (isOnline ? 'text-leaf-100' : 'text-clay-100') : 'text-cream/80'}
               />
               <HeroStat
                 icon={Target}
@@ -163,6 +171,7 @@ export default function DashboardPage() {
               tempC={reading?.tempC}
               targetC={resolvedTarget}
               isOnline={isOnline}
+              apiEnabled={isApiEnabled}
               lastSignalAt={lastUpdated}
               activeAlertCount={activeAlertCount}
               coolingOn={effectiveCoolingOn}

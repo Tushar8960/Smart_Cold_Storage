@@ -51,6 +51,7 @@ export default function TemperatureCard({
   tempC,
   targetC,
   isOnline,
+  apiEnabled = true,
   lastSignalAt,
   activeAlertCount = 0,
   coolingOn,
@@ -111,8 +112,22 @@ export default function TemperatureCard({
           <div className="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-leaf-100">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-bark-900/45">Sensor</p>
             <p className="mt-2 inline-flex items-center gap-2 text-base font-bold text-bark-900">
-              {isOnline ? <Wifi size={18} className="text-leaf-700" /> : <WifiOff size={18} className="text-clay-500" />}
-              {isOnline ? 'Online' : 'Offline'}
+              {!apiEnabled ? (
+                <>
+                  <Wifi size={18} className="text-bark-900/35" />
+                  Standby
+                </>
+              ) : isOnline ? (
+                <>
+                  <Wifi size={18} className="text-leaf-700" />
+                  Online
+                </>
+              ) : (
+                <>
+                  <WifiOff size={18} className="text-clay-500" />
+                  Offline
+                </>
+              )}
             </p>
           </div>
 

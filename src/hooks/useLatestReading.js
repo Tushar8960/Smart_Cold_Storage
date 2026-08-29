@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import { getLatestReading } from '../api/endpoints';
+import { isApiEnabled } from '../api/config';
 import { pickObject } from '../utils/data';
 import { normalizeReading } from '../utils/readings';
 
@@ -19,8 +20,16 @@ export function useLatestReading(pollMs = 5000, staleAfterMs = 30000) {
   const initializedRef = useRef(false);
 
   const fetchReading = useCallback(async () => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = await getLatestReading();
+      if (payload == null) {
+        return;
+      }
       const raw = pickObject(payload, ['reading', 'data']);
       const nextReading = normalizeReading(raw);
       const signalAt = nextReading?.timestamp ?? Date.now();
@@ -63,6 +72,11 @@ export function useLatestReading(pollMs = 5000, staleAfterMs = 30000) {
   }, [staleAfterMs]);
 
   useEffect(() => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return undefined;
+    }
+
     const timeoutId = window.setTimeout(() => {
       void fetchReading();
     }, 0);

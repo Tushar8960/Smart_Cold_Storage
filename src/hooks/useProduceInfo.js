@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useState } from 'react';
 import { getProduceInfo, setProduceInfo } from '../api/endpoints';
+import { isApiEnabled } from '../api/config';
 import { pickObject, toTimestampMs } from '../utils/data';
 
 const STORAGE_KEY = 'harvest-guard-produce';
@@ -52,8 +53,16 @@ export function useProduceInfo() {
   const [fromBackend, setFromBackend] = useState(false);
 
   const refresh = useCallback(async () => {
+    if (!isApiEnabled) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = await getProduceInfo();
+      if (payload == null) {
+        return;
+      }
       const next = normalizeProduce(payload);
 
       startTransition(() => {
@@ -82,6 +91,10 @@ export function useProduceInfo() {
 
     try {
       const payload = await setProduceInfo(nextProduce);
+      if (payload == null && !isApiEnabled) {
+        return;
+      }
+
       const confirmed = normalizeProduce(payload);
 
       startTransition(() => {

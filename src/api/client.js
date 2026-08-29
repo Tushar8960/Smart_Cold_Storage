@@ -2,7 +2,7 @@
 // In dev, Vite proxies /api/* to your backend (see vite.config.js).
 // In production, set VITE_API_BASE_URL to your deployed backend URL.
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+import { API_BASE_URL, isApiEnabled } from './config';
 
 function friendlyApiError(status, body) {
   if (status === 404) {
@@ -22,6 +22,10 @@ function friendlyApiError(status, body) {
 }
 
 async function request(path, options = {}) {
+  if (!isApiEnabled) {
+    return null;
+  }
+
   const headers = new Headers(options.headers);
 
   if (options.body != null && !headers.has('Content-Type')) {
@@ -31,7 +35,7 @@ async function request(path, options = {}) {
   let res;
 
   try {
-    res = await fetch(`${BASE_URL}${path}`, {
+    res = await fetch(`${API_BASE_URL}${path}`, {
       headers,
       ...options,
     });
@@ -63,3 +67,5 @@ export const apiClient = {
   post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),
   put: (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
 };
+
+export { isApiEnabled };
