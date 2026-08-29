@@ -40,10 +40,8 @@ export function useTargetTemperature() {
         setTargetC(nextTarget);
         setError(null);
       });
-    } catch (err) {
-      startTransition(() => {
-        setError(err);
-      });
+    } catch {
+      // Target stays unset when the backend is unavailable.
     } finally {
       setLoading(false);
     }
@@ -69,13 +67,12 @@ export function useTargetTemperature() {
           setTargetC(confirmedTarget);
         }
       });
-    } catch (err) {
+    } catch {
       startTransition(() => {
         targetRef.current = previousTarget;
         setTargetC(previousTarget);
-        setError(err);
       });
-      throw err;
+      throw new Error('Could not save target temperature.');
     } finally {
       setSaving(false);
     }

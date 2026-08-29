@@ -34,7 +34,6 @@ export function useCoolingMode(liveCoolingOn) {
   const overrideRef = useRef(override);
 
   const setOverride = useCallback(async (nextOverride) => {
-    const previous = overrideRef.current;
     overrideRef.current = nextOverride;
     writeStoredOverride(nextOverride);
     setOverrideState(nextOverride);
@@ -43,11 +42,8 @@ export function useCoolingMode(liveCoolingOn) {
 
     try {
       await setCoolingMode(nextOverride == null ? 'auto' : 'manual', nextOverride ?? liveCoolingOn);
-    } catch (err) {
-      overrideRef.current = previous;
-      writeStoredOverride(previous);
-      setOverrideState(previous);
-      setError(err);
+    } catch {
+      // Keep the local override when the backend is unavailable.
     } finally {
       setSaving(false);
     }

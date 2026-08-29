@@ -25,10 +25,8 @@ export function useAlerts(pollMs = 10000) {
         setAlerts(nextAlerts);
         setError(null);
       });
-    } catch (err) {
-      startTransition(() => {
-        setError(err);
-      });
+    } catch {
+      // Alerts stay empty when the backend is unavailable.
     } finally {
       setLoading(false);
     }

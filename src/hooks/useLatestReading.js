@@ -45,7 +45,7 @@ export function useLatestReading(pollMs = 5000, staleAfterMs = 30000) {
         setIsOnline(nextOnline);
         setError(null);
       });
-    } catch (err) {
+    } catch {
       startTransition(() => {
         const lastSignalAt = lastSignalAtRef.current;
         const stillOnline = lastSignalAt != null && Date.now() - lastSignalAt < staleAfterMs;
@@ -56,7 +56,6 @@ export function useLatestReading(pollMs = 5000, staleAfterMs = 30000) {
 
         onlineRef.current = stillOnline;
         setIsOnline(stillOnline);
-        setError(err);
       });
     } finally {
       setLoading(false);

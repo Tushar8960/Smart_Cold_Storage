@@ -4,6 +4,23 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
+function friendlyApiError(status, body) {
+  if (status === 404) {
+    return 'Backend not available yet.';
+  }
+
+  if (status >= 500) {
+    return 'Server error — please try again shortly.';
+  }
+
+  if (body && !body.trim().startsWith('<')) {
+    const trimmed = body.trim().slice(0, 120);
+    return trimmed || `Request failed (${status}).`;
+  }
+
+  return `Request failed (${status}).`;
+}
+
 async function request(path, options = {}) {
   const headers = new Headers(options.headers);
 
@@ -11,14 +28,20 @@ async function request(path, options = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers,
-    ...options,
-  });
+  let res;
+
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      headers,
+      ...options,
+    });
+  } catch {
+    throw new Error('Could not reach the backend.');
+  }
 
   if (!res.ok) {
-    const message = await res.text().catch(() => res.statusText);
-    throw new Error(`API ${res.status}: ${message}`);
+    const message = await res.text().catch(() => '');
+    throw new Error(friendlyApiError(res.status, message));
   }
 
   if (res.status === 204) {

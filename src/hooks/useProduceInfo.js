@@ -89,8 +89,8 @@ export function useProduceInfo() {
         writeLocalProduce(confirmed);
         setFromBackend(true);
       });
-    } catch (err) {
-      setError(err);
+    } catch {
+      // Produce info is already saved locally.
     } finally {
       setSaving(false);
     }

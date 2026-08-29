@@ -17,7 +17,7 @@ export function deriveLiveAlerts({
   const alerts = [];
   const now = reading?.timestamp ?? Date.now();
 
-  if (!isOnline) {
+  if (!isOnline && reading != null) {
     alerts.push(
       makeAlert({
         id: 'live-device-offline',

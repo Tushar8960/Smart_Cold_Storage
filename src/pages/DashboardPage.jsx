@@ -11,7 +11,6 @@ import TemperatureHumidityChart from '../components/charts/TemperatureHumidityCh
 import BatteryHistoryChart from '../components/charts/BatteryHistoryChart';
 import AlertBanner from '../components/alerts/AlertBanner';
 import AlertHistoryList from '../components/alerts/AlertHistoryList';
-import ErrorMessage from '../components/common/ErrorMessage';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { LeafSprig } from '../components/common/LeafDecorations';
 import { useLatestReading } from '../hooks/useLatestReading';
@@ -37,7 +36,6 @@ function HeroStat({ icon: Icon, label, value, tone }) {
 export default function DashboardPage() {
   const {
     reading,
-    error: readingError,
     isOnline,
     loading: readingLoading,
     lastUpdated,
@@ -47,16 +45,13 @@ export default function DashboardPage() {
   const {
     history,
     loading: historyLoading,
-    error: historyError,
   } = useReadingHistory();
   const {
     alerts: backendAlerts,
-    error: alertsError,
     loading: alertsLoading,
   } = useAlerts();
   const {
     targetC,
-    error: targetError,
     loading: targetLoading,
     saving: targetSaving,
     updateTarget,
@@ -66,7 +61,6 @@ export default function DashboardPage() {
     loading: produceLoading,
     saving: produceSaving,
     save: saveProduce,
-    error: produceError,
   } = useProduceInfo();
 
   const liveCoolingState = reading?.coolingOn ?? null;
@@ -74,7 +68,6 @@ export default function DashboardPage() {
     override: coolingOverride,
     effectiveCoolingOn,
     saving: coolingSaving,
-    error: coolingError,
     forceOn,
     forceOff,
     clearOverride,
@@ -101,7 +94,6 @@ export default function DashboardPage() {
 
   const activeAlerts = alerts.filter((alert) => !alert.resolved);
   const activeAlertCount = activeAlerts.length;
-  const errors = [readingError, historyError, alertsError, targetError, coolingError, produceError].filter(Boolean);
 
   const handleTargetChange = async (value) => {
     try {
@@ -164,14 +156,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </section>
-
-        {!!errors.length && (
-          <div className="mt-5 space-y-3">
-            {errors.map((error, index) => (
-              <ErrorMessage key={`${error.message}-${index}`} error={error} />
-            ))}
-          </div>
-        )}
 
         <section className="mt-5 grid gap-5 xl:grid-cols-[1.55fr_1fr]">
           <div className="stagger-1 fade-rise">

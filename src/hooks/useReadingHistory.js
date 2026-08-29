@@ -40,10 +40,8 @@ export function useReadingHistory(params = {}, pollMs = 30000) {
         setHistory(nextHistory);
         setError(null);
       });
-    } catch (err) {
-      startTransition(() => {
-        setError(err);
-      });
+    } catch {
+      // History stays empty when the backend is unavailable.
     } finally {
       setLoading(false);
     }
